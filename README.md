@@ -155,7 +155,7 @@ You should now be able to access the app at http://localhost:5000
              ```
         * To toggle various metadata keys on and off, `App.svelte` maintains a set of "visible" metadata. Here we expect a metadata key called "metadata" to be visible when this button is pressed.
 
-        * In `src/Comment.svelte`, line 60-64 - we display the metadata value if it has been toggled "on" by the user. CSS classes with the same name can also be added to customize how the metadata values are shown.
+        * In `src/Comment.svelte`, line 60-64 - we display the metadata value if it has been toggled "on" by the user. CSS classes can also be created to customize how the metadata values are shown. Here, we have created a CSS class called metadata to customize how this label in the thread.
 
             ```html
     		60 {#if metaInfo.has("metadata") } //Key we inserted in the set of visible metadata in App.svelte
