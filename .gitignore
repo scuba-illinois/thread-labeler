@@ -34,3 +34,5 @@ _output
 /site/scripts/svelte-app
 /site/scripts/community
 /site/src/routes/_contributors.js
+
+public/

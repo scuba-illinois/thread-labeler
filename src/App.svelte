@@ -1,55 +1,61 @@
 <script>
 	import Comment from './Comment.svelte';
 	let loadingComments = { comment: { body: "Loading comments" }, child_nodes: [] };
-	let loadingPost = { title: "Loading Post..", permalink: ""   };
 
-	// - root (Not displayed)
+	//  - Root comment (not visible)	  
 	//		> Parent comment
 	//			> Child A
 	//			> Child B
-	//		> Sibling comment
-	let responseExample = 
-	{
-		comment:
+	//      > Sibling comment
+	let responseExample = {		
+			comment: {
+				root: true,
+			},
+			child_nodes: [	
 				{
-					body: "Parent comment",
-					metadata: "Parent value",
-					id: "234vmlf"
+					comment:
+							{
+								body: "Parent comment",
+								metadata: "Parent value",
+								id: "234vmlf"
+							},
+						
+					child_nodes: 
+							[
+								{ 
+									comment:
+									{
+										body: "Child A",
+										metadata: "First child value",
+										id: "gfdkl2346"
+									},
+									child_nodes: []
+								},
+								{ 
+									comment:
+									{
+										body: "Child B",
+										metadata: "Second child value",
+										id: "786fgd543"
+									},
+									child_nodes: []
+								}
+							]
 				},
-
-		child_nodes: 
-				[
-					{ 
-						comment:
-						{
-							body: "Child A",
-							metadata: "First child value",
-							id: "gfdkl2346"
-						},
-						child_nodes: []
+				{
+					comment: 
+					{
+						body: "Sibling comment",
+						metadata: "A sibling",
+						id: "12745bddc"
 					},
-					{ 
-						comment:
-						{
-							body: "Child B",
-							metadata: "Second child value",
-							id: "786fgd543"
-						},
-						child_nodes: []
-					}
-				]
-	}
-	let postExample = 
-	{
-		title: "Example title fetched from reddit",
-		permalink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+					child_nodes: []
+				}
+		]
 	}
 
 	let root = responseExample; 
-	let post = postExample;
-
 	// let root = loadingComments;
-	// let post = loadingPost;
 
 	let labelledToRemove = new Set();
 	let showMetaInfo = new Set();
@@ -110,21 +116,12 @@
 		alert("Send a request to download all the labels at this point!")
 	}
 
-	function loadPost(link_id) {
-		post = loadingPost;
-		fetch(`https://old.reddit.com/api/info.json?id=${link_id}`)
-	  	.then(response => response.json())
-	  	.then(data => {
-			post = data.data.children[0].data;
-		  });
-	}
-
 	function loadNextThread() {
-		root = responseExample;
+		if ( !threadUrl.length ) return;
+		root = loadingComments;
 		fetch(threadUrl)
 	    .then(response => response.json())
 	    .then(data => root = data)
-		.then(_ => loadPost(root.comment.id));
 	}
 
 	loadNextThread();
@@ -222,9 +219,4 @@
    </label>
 </div>
 
-<div>
-	<a href="{ `https://old.reddit.com/${post.permalink}` }" target="_blank">
-		<h3>{ post.title }</h3>
-	</a>
-</div>
 <Comment bind:labelled={ labelledToRemove } bind:metaInfo={showMetaInfo} comment={ root.comment } child_nodes={ root.child_nodes } />

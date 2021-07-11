@@ -25,7 +25,7 @@
 
 	span.comment_wrapper {
 		padding: 0 0 0 1em;
-		background: url(https://icon-library.net/images/black-triangle-icon/black-triangle-icon-27.jpg) 0 0.5em no-repeat;
+		background: url(https://upload.wikimedia.org/wikipedia/commons/2/24/TriangleArrow-Right.svg) 0 0.5em no-repeat;
 		background-size: 0.5em 0.5em;
 		cursor: pointer;
 	}
