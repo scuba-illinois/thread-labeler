@@ -6,4 +6,4 @@
   * Progress for each user is also saved in a similar manner
   * The labelling is restricted to only certain comments in the thread as part of the experiment methodology. 
 * This branch is intended as a reference for someone who is modifying the simpler version.
-* If you have any questions about how this version works, please contact the author at adishy at umich.edu
+* If you have any questions about how this version works, please contact the author at adishy at umich dot edu
