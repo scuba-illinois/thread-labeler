@@ -2,15 +2,62 @@
 	import Comment from './Comment.svelte';
 	let loadingComments = { comment: { body: "Loading comments" }, child_nodes: [] };
 	let loadingPost = { title: "Loading Post..", permalink: ""   };
-	let root = loadingComments
-	let post = loadingPost;
+
+	// - root (Not displayed)
+	//		> Parent comment
+	//			> Child A
+	//			> Child B
+	//		> Sibling comment
+	let responseExample = 
+	{
+		comment:
+				{
+					body: "Parent comment",
+					metadata: "Parent value",
+					id: "234vmlf"
+				},
+
+		child_nodes: 
+				[
+					{ 
+						comment:
+						{
+							body: "Child A",
+							metadata: "First child value",
+							id: "gfdkl2346"
+						},
+						child_nodes: []
+					},
+					{ 
+						comment:
+						{
+							body: "Child B",
+							metadata: "Second child value",
+							id: "786fgd543"
+						},
+						child_nodes: []
+					}
+				]
+	}
+	let postExample = 
+	{
+		title: "Example title fetched from reddit",
+		permalink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+	}
+
+	let root = responseExample; 
+	let post = postExample;
+
+	// let root = loadingComments;
+	// let post = loadingPost;
 
 	let labelledToRemove = new Set();
 	let showMetaInfo = new Set();
 	
 	let showInstructions = false;
 	let showSettings = false;
-	let saveUrl = "http://random-thread.crossmod.ml";
+	let saveUrl = "";
+	let threadUrl = "";
 	let email = "";
 
 	function toggleInstructions() {
@@ -39,22 +86,28 @@
 		showRemovedIds();
 		if ( root === loadingComments ) return;
 		let labels = []
-		labelledToRemove.forEach((comment_id) => labels.push({ comment_id: comment_id, link_id: root.comment.id, email: email }))
+		labelledToRemove.forEach((comment_id) => labels.push({ comment_id: comment_id, email: email }))
 		console.log(JSON.stringify(labels))
+		alert("Send a request to save labelling at this point!")
+		if ( !saveUrl.length ) return;
 		fetch(`${saveUrl}/label/`, {
-	     headers: {
-	      'Accept': 'application/json',
-	      'Content-Type': 'application/json'
-	     },
-	     method: 'POST',
-	     body: JSON.stringify(labels)
-	    })
+	        headers: {
+	         'Accept': 'application/json',
+	         'Content-Type': 'application/json'
+	        },
+	        method: 'POST',
+	        body: JSON.stringify(labels)
+	       })
 		.then((response) => response.json())
 		.then((data) => {
 			console.log("Saving labels", data);
 			alert("Saved labels!");
 			labelledToRemove.clear();
 		})
+	}
+
+	function downloadLabels() {
+		alert("Send a request to download all the labels at this point!")
 	}
 
 	function loadPost(link_id) {
@@ -66,15 +119,15 @@
 		  });
 	}
 
-	function loadRandomThread() {
-		root = loadingComments;
-		fetch('http://random-thread.crossmod.ml')
-	  	.then(response => response.json())
-	  	.then(data => root = data)
+	function loadNextThread() {
+		root = responseExample;
+		fetch(threadUrl)
+	    .then(response => response.json())
+	    .then(data => root = data)
 		.then(_ => loadPost(root.comment.id));
 	}
 
-	loadRandomThread();
+	loadNextThread();
 
 </script>
 
@@ -125,12 +178,9 @@
 </style>
 
 <div class="button_container">
-	<p class="button" on:click={ loadRandomThread }>Show me another thread</p>
-	<p class:pressed={ showMetaInfo.has("agreement_score") } class="button" on:click={ () => addMetaInfo("agreement_score") }>Reveal Crossmod Agreement Scores</p>
-	<p class:pressed={ showMetaInfo.has("author") } class="button" on:click={ () => addMetaInfo("author") }>Reveal comment authors</p>
-	<p class:pressed={ showMetaInfo.has("banned_by") } class="button" on:click={ () => addMetaInfo("banned_by") }>Reveal comments removed by moderators</p>
-	<p class:pressed={ showMetaInfo.has("false_positive") } class="button" on:click={ () => addMetaInfo("false_positive") }>Highlight false positives</p>
-	<p class:pressed={ showMetaInfo.has("false_negative") } class="button" on:click={ () => addMetaInfo("false_negative") }>Highlight false negatives</p>
+	<p class="button" on:click={ loadNextThread }>Next thread</p>
+	<p class:pressed={ showMetaInfo.has("metadata") } class="button" on:click={ () => addMetaInfo("metadata") }>Reveal metadata value for all comments</p>
+	<p class:pressed={ showMetaInfo.has("conditionalMetadata") } class="button" on:click={ () => addMetaInfo("conditionalMetadata") }>Highlight comments for which the metadata value meets a condition</p>
 	<p class="button save" on:click={ saveLabels }>Save my labelling!</p>
 </div>
 <div class="action_link_container">
@@ -144,29 +194,8 @@
 	{#if showInstructions }
 	<div class="usage_container">
 		<ul>
-			<li>
-				This tool shows you a randomly sampled discussion thread from Crossmod's reporting experiment data set.
-				It is meant to help manually label comments a little more easily.
-			</li>
-
-			<li>
-				To mark a comment as "removed", just click the text of the comment. You will see that the comment becomes struck-through to indicate this.
-				To unmark a comment simply click again.
-			</li>
-			<li>
-				Once you are done labelling comments, save your labels by clicking the "Save Labels button"
-			</li>
-			<li>
-				The Reveal buttons add labels showing additional meta information about the comments, to help you better decide which comments to remove.
-			</li>
-			<li>
-				To randomly sample another discussion thread, just hit the "Show me another thread button"
-			</li>
-			<li>
-				False Positives: Comments removed by Crossmod that have not been removed by moderators (Highlighted in yellow)
-			</li>
-			<li>
-				False Negatives: Comments removed by moderators that would not be removed by Crossmod (Highlighted in orange)
+			<li>	
+				This section provides the user with instructions to use the tool			
 			</li>
 		</ul>
 	</div>
@@ -186,7 +215,7 @@
     	</label>
 	</div>
 	{/if}
-	<a href="{ saveUrl }/labels.csv">Download all labelled comments</a>
+	<a on:click="{downloadLabels}">Download all labelled comments</a>
 	<label>
 		Email (to keep track of who is labelling):
 	 	<input type="text" placeholder="Email" bind:value={email}/>
